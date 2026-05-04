@@ -396,6 +396,16 @@ namespace TargetCamControl
             {
                 var camComp = Plugin.F_TargetCam_cam?.GetValue(tc) as Camera;
                 if (camComp == null) return;
+
+                // Force out of landing mode FIRST. SetTargetCam early-returns if
+                // currentMode == landingMode (Compass with gear extended hits this),
+                // and the landing canvas overlays the target HUD if left active.
+                if (Plugin.F_TargetCam_currentMode != null)
+                    Plugin.F_TargetCam_currentMode.SetValue(tc, 0); // 0 = CamMode.targetForward
+                var landingCanvas = Plugin.F_TargetCam_canvasObjectLanding?.GetValue(tc) as GameObject;
+                if (landingCanvas != null && landingCanvas.activeSelf)
+                    landingCanvas.SetActive(false);
+
                 if (!camComp.enabled)
                     Plugin.M_TargetCam_SetTargetCam?.Invoke(tc, null);
 

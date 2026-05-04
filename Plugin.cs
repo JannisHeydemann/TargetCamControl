@@ -66,6 +66,8 @@ namespace TargetCamControl
         internal static FieldInfo F_TargetCam_currentMount;
         internal static FieldInfo F_TargetCam_camMountForward;
         internal static FieldInfo F_TargetCam_canvasObjectTarget;
+        internal static FieldInfo F_TargetCam_currentMode;
+        internal static FieldInfo F_TargetCam_canvasObjectLanding;
         internal static MethodInfo M_TargetCam_SetTargetCam;
 
         void Awake()
@@ -101,6 +103,8 @@ namespace TargetCamControl
                 F_TargetCam_currentMount = tcType.GetField("currentMount", flags);
                 F_TargetCam_camMountForward = tcType.GetField("camMountForward", flags);
                 F_TargetCam_canvasObjectTarget = tcType.GetField("canvasObjectTarget", flags);
+                F_TargetCam_currentMode = tcType.GetField("currentMode", flags);
+                F_TargetCam_canvasObjectLanding = tcType.GetField("canvasObjectLanding", flags);
                 M_TargetCam_SetTargetCam = tcType.GetMethod("SetTargetCam",
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (F_TargetCam_cam == null || F_TargetCam_targetFOV == null || F_TargetCam_IRMode == null
