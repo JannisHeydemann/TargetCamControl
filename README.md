@@ -1,4 +1,4 @@
-# Target Cam Control
+# Tactical Camera Controller
 
 A BepInEx plugin for **Nuclear Option** that turns the cockpit target camera (the small MFD camera) into a free-look surveillance / lasing pod — pan, tilt, and zoom around the world even without a target lock, and the camera auto-stabilises on whatever ground point you aim at.
 
@@ -56,7 +56,7 @@ The `*Axis` actions are placeholders for future analog joystick support and can 
 
 ## Known limitations
 
-- **HOTAS / hat-switch binding** is not yet supported. Nuclear Option's controls UI puts custom Rewired actions in the Debug category, which only accepts keyboard. Working on a fix — for now, use a tool like JoyToKey to map joystick buttons to keyboard keys if you want HOTAS-style control.
+- **HOTAS / hat-switch binding** is not supported yet. I want HOTAS support too and I'm actively working on it — Nuclear Option routes custom Rewired actions into the Debug category which only accepts keyboard input, so it needs a different approach. For now, JoyToKey / reWASD can map joystick → keyboard keys if you want HOTAS-style control in the meantime.
 - A real target lock will auto-exit manual mode (the camera follows the in-game target instead). Re-press ToggleManual to take control again.
 
 ## Building from source

@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace TargetCamControl
 {
-    [BepInPlugin("com.noms.targetcamcontrol", "Target Cam Control", "1.0.0")]
+    [BepInPlugin("com.noms.targetcamcontrol", "Tactical Camera Controller", "1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
         internal static Plugin Instance;
@@ -123,7 +123,7 @@ namespace TargetCamControl
                 }
             };
 
-            Log.LogInfo($"Target Cam Control v1.0.0 loaded. Bind keys in Settings → Controls → Debug category.");
+            Log.LogInfo($"Tactical Camera Controller v1.0.0 loaded. Bind keys in Settings → Controls → Debug category.");
         }
     }
 

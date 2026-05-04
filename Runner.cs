@@ -165,27 +165,28 @@ namespace TargetCamControl
 
                 bool hasInput = (panDelta != 0f) || (tiltDelta != 0f);
 
-                // Initialize PanDir on first frame after EnterManual: use lock direction if
-                // available, otherwise aircraft forward. World-space, independent of bank/yaw.
+                // Initialize PanDir on first frame after EnterManual.
                 if (!Plugin.HasPanDir)
                 {
-                    if (Plugin.HasLastHit)
-                    {
-                        Vector3 hitLocal0 = Plugin.LastHitGP.ToLocalPosition();
-                        Plugin.PanDir = (hitLocal0 - mount.position).normalized;
-                    }
-                    else
-                    {
-                        Plugin.PanDir = aircraft.transform.forward;
-                    }
+                    Plugin.PanDir = aircraft.transform.forward;
                     Plugin.HasPanDir = true;
+                }
+
+                // Re-derive PanDir from LastHit every frame so the camera auto-tracks the
+                // locked world point as the aircraft moves. User input is then applied as
+                // a small delta on top of this auto-tracked direction.
+                if (Plugin.HasLastHit)
+                {
+                    Vector3 hitLocal = Plugin.LastHitGP.ToLocalPosition();
+                    Vector3 toHit = hitLocal - mount.position;
+                    if (toHit.sqrMagnitude > 0.01f)
+                        Plugin.PanDir = toHit.normalized;
                 }
 
                 if (hasInput)
                 {
-                    // Apply pan/tilt as world-axis deltas to the persistent direction vector.
-                    // This way the camera doesn't tumble with aircraft bank/yaw and the user
-                    // can pan sideways while the aircraft is maneuvering.
+                    // Pan/tilt delta on top of the auto-tracked direction. Yaw around world
+                    // up; pitch around the right axis perpendicular to PanDir.
                     if (Mathf.Abs(panDelta) > 0f)
                         Plugin.PanDir = Quaternion.AngleAxis(panDelta, Vector3.up) * Plugin.PanDir;
                     if (Mathf.Abs(tiltDelta) > 0f)
@@ -196,10 +197,7 @@ namespace TargetCamControl
                     }
                     Plugin.PanDir = Plugin.PanDir.normalized;
 
-                    // Apply cam rotation in world space — independent of aircraft attitude.
-                    mount.rotation = Quaternion.LookRotation(Plugin.PanDir, Vector3.up);
-
-                    // Raycast in that direction so LastHit is fresh when input releases.
+                    // Raycast in the new direction → update lock point.
                     Vector3 origin = camComp.transform.position + Plugin.PanDir * 50f;
                     if (TryRaycastWorld(origin, Plugin.PanDir, aircraft, out Vector3 hit, out string hitName))
                     {
@@ -207,25 +205,11 @@ namespace TargetCamControl
                         Plugin.HasLastHit = true;
                     }
                 }
-                else
-                {
-                    // No input — track the locked world point. As aircraft moves, the look
-                    // angle auto-adjusts to keep the same point centered.
-                    if (Plugin.HasLastHit)
-                    {
-                        Vector3 hitLocal = Plugin.LastHitGP.ToLocalPosition();
-                        Vector3 toHit = hitLocal - mount.position;
-                        if (toHit.sqrMagnitude > 0.01f)
-                        {
-                            Plugin.PanDir = toHit.normalized;
-                            mount.rotation = Quaternion.LookRotation(Plugin.PanDir, Vector3.up);
-                        }
-                    }
-                    else
-                    {
-                        mount.rotation = Quaternion.LookRotation(Plugin.PanDir, Vector3.up);
-                    }
-                }
+
+                // Always orient mount along PanDir. Because PanDir is rederived from LastHit
+                // each frame, aircraft translation is automatically compensated — the small
+                // user-input deltas land on top of the stabilised tracking.
+                mount.rotation = Quaternion.LookRotation(Plugin.PanDir, Vector3.up);
                 if (camComp.transform.localRotation != Quaternion.identity)
                     camComp.transform.localRotation = Quaternion.identity;
 
