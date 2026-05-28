@@ -373,4 +373,47 @@ namespace TargetCamControl
             return false; // skip the rest of vanilla Update
         }
     }
+
+    // ====================================================================
+    // Harmony: override the weapon targeting point (LaserImpactPoint)
+    // when the TGP is in manual mode. This ensures bombs and missiles
+    // fly to where the crosshair is pointing.
+    // ====================================================================
+    [HarmonyPatch(typeof(LaserDesignator), "Update")]
+    static class Patch_LaserDesignator_WeaponOverride
+    {
+        [HarmonyPostfix]
+        static void Postfix(LaserDesignator __instance)
+        {
+            if (!Plugin.ManualMode) return;
+
+            try
+            {
+                // Get the TGP transform from the designator instance
+                // (Using the method name suggested by the user)
+                Transform tgpTransform = __instance.GetTGPTransform();
+                if (tgpTransform == null) return;
+
+                // Perform raycast from TGP camera to find the world point
+                // Using a distance of 100km and default layer mask for simplicity
+                if (Physics.Raycast(tgpTransform.position, tgpTransform.forward, out RaycastHit hit, 100000f))
+                {
+                    var t = Traverse.Create(__instance);
+
+                    // Update target vector fields
+                    if (t.Field("laserImpactPoint").Exists())
+                        t.Field("laserImpactPoint").SetValue(hit.point);
+                    
+                    if (t.Field("currentTargetPosition").Exists())
+                        t.Field("currentTargetPosition").SetValue(hit.point);
+                }
+            }
+            catch (Exception e)
+            {
+                // Silent catch to prevent spam, but log occasionally
+                if (Time.frameCount % 1000 == 0)
+                    Plugin.Log.LogDebug($"[TCC] Laser override error: {e.Message}");
+            }
+        }
+    }
 }
